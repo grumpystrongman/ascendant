@@ -12,14 +12,14 @@ export class PrologueScene extends Phaser.Scene{
   }
   create(){
     this.bg=this.add.image(800,450,'prologueBg');
-    this.bg2=this.add.image(805,455,'prologueBg').setAlpha(.18).setBlendMode('ADD');
-    this.tweens.add({targets:this.bg2,x:790,y:440,alpha:.08,duration:6000,yoyo:true,repeat:-1,ease:'Sine.inOut'});
-    for(let i=0;i<35;i++){
-      const p=this.add.circle(Phaser.Math.Between(0,1600),Phaser.Math.Between(0,900),Phaser.Math.Between(1,4),0xffe0a1,Phaser.Math.FloatBetween(.08,.3));
-      this.tweens.add({targets:p,x:p.x+Phaser.Math.Between(30,160),y:p.y-Phaser.Math.Between(10,80),duration:Phaser.Math.Between(5000,12000),repeat:-1,yoyo:true});
+    this.bg2=this.add.image(815,445,'prologueBg').setAlpha(.10).setBlendMode('ADD');
+    this.tweens.add({targets:this.bg2,x:785,y:460,alpha:.04,duration:6500,yoyo:true,repeat:-1,ease:'Sine.inOut'});
+    for(let i=0;i<28;i++){
+      const p=this.add.circle(Phaser.Math.Between(0,1600),Phaser.Math.Between(0,900),Phaser.Math.Between(1,3),0xffdf9c,Phaser.Math.FloatBetween(.08,.28));
+      this.tweens.add({targets:p,x:p.x+Phaser.Math.Between(40,150),y:p.y-Phaser.Math.Between(12,70),duration:Phaser.Math.Between(6000,13000),repeat:-1,yoyo:true});
     }
     this.showStep();
-    this.cameras.main.fadeIn(600,0,0,0);
+    this.cameras.main.fadeIn(500,0,0,0);
   }
   clearStep(){this.stepObjects?.forEach(o=>o.destroy());this.stepObjects=[]}
   showStep(){
@@ -30,70 +30,89 @@ export class PrologueScene extends Phaser.Scene{
     else if(step.kind==='spark')this.showSpark();
     else this.showNarration(step.title,step.text);
   }
-  panel(){const r=this.add.rectangle(800,680,1370,330,0x09111f,.88).setStrokeStyle(2,0xb1c9e8,.22);this.stepObjects.push(r)}
+  basePanel(height=330,y=690){
+    const shadow=this.add.rectangle(808,y+10,1375,height,0x000000,.28);
+    const panel=this.add.rectangle(800,y,1375,height,0x08111f,.94).setStrokeStyle(2,0xc6d9ee,.20);
+    this.stepObjects.push(shadow,panel);
+    return {left:112,right:1488,top:y-height/2,bottom:y+height/2};
+  }
   showNarration(title,text){
-    this.panel();
-    this.stepObjects.push(
-      this.add.text(145,565,'PROLOGUE · THE AGE OF BROKEN ROADS',{fontFamily:'Arial',fontSize:'16px',fontStyle:'bold',letterSpacing:4,color:'#7de4d8'}),
-      this.add.text(145,607,title,{fontFamily:'Georgia',fontSize:'50px',fontStyle:'bold',color:'#fff0bf'}),
-      this.add.text(145,675,text,{fontFamily:'Georgia',fontSize:'25px',lineSpacing:9,color:'#d9e0ee',wordWrap:{width:1110}})
-    );
-    this.nextButton('CONTINUE');
+    const b=this.basePanel(325,690);
+    const eyebrow=this.add.text(b.left+35,b.top+28,'PROLOGUE · THE AGE OF BROKEN ROADS',{fontFamily:'Arial',fontSize:'15px',fontStyle:'bold',letterSpacing:4,color:'#75dfd3'});
+    const heading=this.add.text(b.left+35,b.top+65,title,{fontFamily:'Georgia',fontSize:'46px',fontStyle:'bold',color:'#fff0bf'});
+    const body=this.add.text(b.left+35,b.top+128,text,{fontFamily:'Georgia',fontSize:'22px',lineSpacing:7,color:'#dce4f1',wordWrap:{width:1120}});
+    this.stepObjects.push(eyebrow,heading,body);
+    this.nextButton('CONTINUE',1360,b.bottom-42);
   }
   showCompanion(id){
     discover(id);
     const c=COMPANIONS[id];
-    const portrait=this.add.image(430,485,c.portrait).setScale(.78);portrait.x=120;portrait.alpha=0;
-    this.tweens.add({targets:portrait,x:430,alpha:1,duration:650,ease:'Cubic.out'});
-    this.panel();
-    this.stepObjects.push(
-      portrait,
-      this.add.text(720,555,'THE WAYFARERS',{fontFamily:'Arial',fontSize:'16px',fontStyle:'bold',letterSpacing:5,color:'#7de4d8'}),
-      this.add.text(720,595,c.name,{fontFamily:'Georgia',fontSize:'48px',fontStyle:'bold',color:'#fff0bf'}),
-      this.add.text(720,650,c.title,{fontFamily:'Arial',fontSize:'19px',fontStyle:'bold',color:'#c2b4ff'}),
-      this.add.text(720,695,c.intro,{fontFamily:'Georgia',fontSize:'22px',lineSpacing:6,color:'#dce4f1',wordWrap:{width:690}}),
-      this.add.text(720,810,c.line,{fontFamily:'Georgia',fontSize:'19px',fontStyle:'italic',color:'#f5cf80',wordWrap:{width:690}})
-    );
-    this.nextButton('MEET '+c.name.split(' ')[0].toUpperCase());
+    const b=this.basePanel(360,690);
+
+    const portraitShadow=this.add.ellipse(360,790,360,48,0x000000,.22);
+    const portrait=this.add.image(355,440,c.portrait).setScale(.58);
+    portrait.x=80; portrait.alpha=0;
+    this.tweens.add({targets:portrait,x:355,alpha:1,duration:620,ease:'Cubic.out'});
+    this.tweens.add({targets:portrait,y:432,duration:2800,yoyo:true,repeat:-1,ease:'Sine.inOut'});
+
+    const divider=this.add.rectangle(610,690,2,300,0xffffff,.08);
+    const eyebrow=this.add.text(660,b.top+30,'THE WAYFARERS',{fontFamily:'Arial',fontSize:'15px',fontStyle:'bold',letterSpacing:5,color:'#75dfd3'});
+    const name=this.add.text(660,b.top+62,c.name,{fontFamily:'Georgia',fontSize:'44px',fontStyle:'bold',color:'#fff0bf'});
+    const title=this.add.text(660,b.top+112,c.title.toUpperCase(),{fontFamily:'Arial',fontSize:'16px',fontStyle:'bold',letterSpacing:1.2,color:'#c9b7ff'});
+    const intro=this.add.text(660,b.top+152,c.intro,{fontFamily:'Georgia',fontSize:'20px',lineSpacing:6,color:'#dde5f0',wordWrap:{width:715}});
+    const quoteRule=this.add.rectangle(660,b.bottom-86,520,2,0xf1c66c,.35).setOrigin(0,.5);
+    const quote=this.add.text(660,b.bottom-73,c.line,{fontFamily:'Georgia',fontSize:'18px',fontStyle:'italic',color:'#f2cc74',wordWrap:{width:560}});
+
+    this.stepObjects.push(portraitShadow,portrait,divider,eyebrow,name,title,intro,quoteRule,quote);
+    this.nextButton('CONTINUE',1350,b.bottom-44);
   }
   showDialogue(id,text){
     const c=COMPANIONS[id];
-    const portrait=this.add.image(330,510,c.portrait).setScale(.68);
-    this.tweens.add({targets:portrait,y:500,duration:2500,yoyo:true,repeat:-1,ease:'Sine.inOut'});
-    this.panel();
-    this.stepObjects.push(
-      portrait,
-      this.add.text(645,585,c.name,{fontFamily:'Georgia',fontSize:'38px',fontStyle:'bold',color:'#fff0bf'}),
-      this.add.text(645,650,text,{fontFamily:'Georgia',fontSize:'29px',fontStyle:'italic',lineSpacing:10,color:'#e9eef8',wordWrap:{width:720}})
-    );
-    this.nextButton('CONTINUE');
+    const b=this.basePanel(330,690);
+    const portrait=this.add.image(360,455,c.portrait).setScale(.50);
+    this.tweens.add({targets:portrait,y:447,duration:2500,yoyo:true,repeat:-1,ease:'Sine.inOut'});
+    const divider=this.add.rectangle(595,690,2,270,0xffffff,.08);
+    const who=this.add.text(650,b.top+55,c.name,{fontFamily:'Georgia',fontSize:'38px',fontStyle:'bold',color:'#fff0bf'});
+    const body=this.add.text(650,b.top+115,text,{fontFamily:'Georgia',fontSize:'25px',fontStyle:'italic',lineSpacing:9,color:'#e9eef8',wordWrap:{width:690}});
+    this.stepObjects.push(portrait,divider,who,body);
+    this.nextButton('CONTINUE',1350,b.bottom-44);
   }
   showSpark(){
-    this.panel();
-    this.stepObjects.push(
-      this.add.text(145,565,'CHOOSE THE FIRST SPARK',{fontFamily:'Georgia',fontSize:'46px',fontStyle:'bold',color:'#fff0bf'}),
-      this.add.text(145,625,'Do one small thing in the real world. When you return, choose what you did. The Heart will know the difference between intention and action.',{fontFamily:'Georgia',fontSize:'23px',lineSpacing:8,color:'#dce4f1',wordWrap:{width:1260}})
-    );
-    const choices=[['DRINK WATER','water'],['ONE DELIBERATE BREATH','breath'],['MOVE FOR ONE MINUTE','move'],['WRITE ONE INTENTION','intention']];
+    const b=this.basePanel(340,690);
+    const heading=this.add.text(b.left+25,b.top+28,'CHOOSE THE FIRST SPARK',{fontFamily:'Georgia',fontSize:'42px',fontStyle:'bold',color:'#fff0bf'});
+    const body=this.add.text(b.left+25,b.top+80,'Do one small thing in the real world. When you return, choose what you did. The Heart will know the difference between intention and action.',{fontFamily:'Georgia',fontSize:'20px',lineSpacing:6,color:'#dce4f1',wordWrap:{width:1270}});
+    this.stepObjects.push(heading,body);
+
+    const choices=[
+      ['DRINK WATER','water'],
+      ['ONE DELIBERATE BREATH','breath'],
+      ['MOVE FOR ONE MINUTE','move'],
+      ['WRITE ONE INTENTION','intention']
+    ];
     choices.forEach(([label,value],i)=>{
-      const x=340+(i%2)*620,y=740+Math.floor(i/2)*72;
-      const r=this.add.rectangle(x,y,540,52,0x15243d,.94).setStrokeStyle(2,0x76ddcf,.45).setInteractive({useHandCursor:true});
-      const t=this.add.text(x,y,label,{fontFamily:'Arial',fontSize:'18px',fontStyle:'bold',color:'#f7f2db'}).setOrigin(.5);
-      r.on('pointerover',()=>r.setFillStyle(0x244266,.98)).on('pointerout',()=>r.setFillStyle(0x15243d,.94)).on('pointerdown',()=>this.spark(value));
-      this.stepObjects.push(r,t);
+      const col=i%2,row=Math.floor(i/2);
+      const x=400+col*760, y=b.top+184+row*70;
+      const bg=this.add.rectangle(x,y,650,50,0x13233d,.97).setStrokeStyle(2,0x74ded2,.42).setInteractive({useHandCursor:true});
+      const t=this.add.text(x,y,label,{fontFamily:'Arial',fontSize:'16px',fontStyle:'bold',letterSpacing:.5,color:'#f8f2dc'}).setOrigin(.5);
+      bg.on('pointerover',()=>{bg.setFillStyle(0x203b5e,.98);this.tweens.add({targets:[bg,t],scale:1.015,duration:100})})
+        .on('pointerout',()=>{bg.setFillStyle(0x13233d,.97);this.tweens.add({targets:[bg,t],scale:1,duration:100})})
+        .on('pointerdown',()=>this.spark(value));
+      this.stepObjects.push(bg,t);
     });
   }
   spark(value){
     patch({firstSpark:value,prologue:11,heart:28,screen:'adventure'});
-    const core=this.add.circle(800,390,50,0x78ffe4,.85).setBlendMode('ADD');
-    this.tweens.add({targets:core,scale:14,alpha:0,duration:1200,ease:'Cubic.out'});
-    this.cameras.main.flash(700,190,255,225);this.cameras.main.shake(500,.006);
-    this.time.delayedCall(1050,()=>this.scene.start('Adventure'));
+    const core=this.add.circle(800,395,48,0x78ffe4,.88).setBlendMode('ADD');
+    this.tweens.add({targets:core,scale:15,alpha:0,duration:1150,ease:'Cubic.out'});
+    this.cameras.main.flash(650,190,255,225); this.cameras.main.shake(420,.005);
+    this.time.delayedCall(1000,()=>this.scene.start('Adventure'));
   }
-  nextButton(label){
-    const btn=this.add.rectangle(1320,825,250,54,0xf1bf62).setStrokeStyle(2,0xffe4a3).setInteractive({useHandCursor:true});
-    const t=this.add.text(1320,825,label,{fontFamily:'Arial',fontSize:'16px',fontStyle:'bold',color:'#25190c'}).setOrigin(.5);
-    btn.on('pointerdown',()=>{patch({prologue:Math.min(10,state.prologue+1)});this.showStep()});
+  nextButton(label,x,y){
+    const btn=this.add.rectangle(x,y,220,48,0xefbd5f,1).setStrokeStyle(2,0xffe0a0).setInteractive({useHandCursor:true});
+    const t=this.add.text(x,y,label,{fontFamily:'Arial',fontSize:'15px',fontStyle:'bold',letterSpacing:.6,color:'#25190d'}).setOrigin(.5);
+    btn.on('pointerover',()=>this.tweens.add({targets:[btn,t],scale:1.03,duration:90}))
+      .on('pointerout',()=>this.tweens.add({targets:[btn,t],scale:1,duration:90}))
+      .on('pointerdown',()=>{patch({prologue:Math.min(10,state.prologue+1)});this.showStep()});
     this.stepObjects.push(btn,t);
   }
 }
