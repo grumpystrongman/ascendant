@@ -1,45 +1,53 @@
 import Phaser from 'phaser';
 import { state } from '../state.js';
-import { ROOMS,COMPANIONS } from '../lore.js';
-import { preloadArt,defineFrames,addBackdrop,addPortrait,addParticles } from '../art.js';
-import { panel,goldButton,topBar,nav,heading } from '../ui.js';
+import { preloadArt,addBackdrop,addParticles } from '../art.js';
 import { audio } from '../audio.js';
 
 export class HubScene extends Phaser.Scene{
   constructor(){super('Hub')}
   preload(){preloadArt(this)}
   create(){
-    defineFrames(this);addBackdrop(this,'ship');this.add.rectangle(800,450,1600,900,0x050812,.26);addParticles(this,'gold',26);
-    topBar(this,state,'THE WAYFARER','A home that remembers what you restore');nav(this,'Hub');
-    const core=this.add.circle(807,520,64,0x76ead9,.20).setBlendMode('ADD');
-    this.tweens.add({targets:core,scale:1.55,alpha:.04,duration:2200,yoyo:true,repeat:-1,ease:'Sine.inOut'});
-    panel(this,1265,360,560,520,.88);
-    heading(this,1020,145,'GROWING HOME','The Wayfarer',`The Crystal Heart is awake at ${state.heart}%. Every real action restores more of the ship — and reveals more of what it used to be.`,465);
-    this.add.text(1020,305,'RESTORED SPACES',{fontFamily:'Arial',fontSize:'13px',fontStyle:'bold',letterSpacing:3,color:'#78dfd2'});
-    let y=340;
-    ROOMS.forEach(r=>{
-      const unlocked=state.unlockedRooms.includes(r.id);
-      const row=this.add.rectangle(1260,y,470,58,unlocked?0x132943:0x111723,unlocked?.92:.72).setStrokeStyle(1,unlocked?0x84d9d0:0x667080,.32);
-      this.add.text(1045,y-10,unlocked?r.name:'SEALED · '+r.name,{fontFamily:'Georgia',fontSize:'18px',fontStyle:'bold',color:unlocked?'#fff0bf':'#758095'});
-      this.add.text(1045,y+13,unlocked?r.desc:'The Heart has not remembered this room yet.',{fontFamily:'Arial',fontSize:'11px',color:unlocked?'#b8c6d9':'#646d7a',wordWrap:{width:400}});
-      if(unlocked)row.setInteractive({useHandCursor:true}).on('pointerdown',()=>{audio.click();this.showRoom(r)});
-      y+=68;
-    });
-    goldButton(this,1260,700,330,'OPEN THE LIVING MAP',()=>{audio.chime();this.scene.start('World')});
-    this.add.text(110,685,'THE WAYFARERS',{fontFamily:'Arial',fontSize:'13px',fontStyle:'bold',letterSpacing:4,color:'#78dfd2'});
-    ['kaia','milo','seren'].forEach((id,i)=>{
-      const c=COMPANIONS[id],x=175+i*245;
-      const p=addPortrait(this,id,x,755,235);p.setAlpha(.92).setInteractive({useHandCursor:true}).on('pointerdown',()=>this.scene.start('Party',{focus:id}));
-      this.add.text(x,815,c.name.split(' ')[0],{fontFamily:'Georgia',fontSize:'18px',fontStyle:'bold',color:'#fff0bf'}).setOrigin(.5);
-    });
-    this.cameras.main.fadeIn(500,0,0,0);
+    addBackdrop(this,'ship');
+    addParticles(this,'gold',18);
+
+    const glow=this.add.circle(825,285,92,0x77e7ff,.12).setBlendMode('ADD');
+    this.tweens.add({targets:glow,scale:{from:.92,to:1.28},alpha:{from:.05,to:.18},duration:2200,yoyo:true,repeat:-1,ease:'Sine.inOut'});
+
+    this.dynamicPill();
+
+    this.hotspot(320,470,330,250,()=>this.scene.start('Party',{focus:'kaia'}));
+    this.hotspot(1330,470,330,240,()=>this.scene.start('Codex'));
+    this.hotspot(1310,665,360,220,()=>this.scene.start('Party',{focus:'milo'}));
+    this.hotspot(825,300,320,320,()=>this.heartPopup());
+
+    this.hotspot(300,835,170,90,()=>this.scene.start('World'));
+    this.hotspot(535,835,170,90,()=>{});
+    this.hotspot(770,835,170,90,()=>this.scene.start('Party'));
+    this.hotspot(1010,835,170,90,()=>this.scene.start('Codex'));
+    this.hotspot(1245,835,170,90,()=>this.scene.start('Adventure'));
+
+    this.cameras.main.fadeIn(450,0,0,0);
   }
-  showRoom(room){
-    const o=this.add.rectangle(800,450,1600,900,0x02050b,.72).setInteractive();
-    panel(this,800,450,760,360,.97);
-    this.add.text(470,315,room.name.toUpperCase(),{fontFamily:'Arial',fontSize:'14px',fontStyle:'bold',letterSpacing:4,color:'#78dfd2'});
-    this.add.text(470,355,room.name,{fontFamily:'Georgia',fontSize:'40px',fontStyle:'bold',color:'#fff0bf'});
-    this.add.text(470,420,room.desc,{fontFamily:'Georgia',fontSize:'22px',lineSpacing:7,color:'#dbe4f2',wordWrap:{width:650}});
-    goldButton(this,800,555,220,'RETURN TO DECK',()=>{audio.click();this.scene.restart()});
+  dynamicPill(){
+    this.add.rectangle(1385,42,335,52,0x06101d,.82).setStrokeStyle(1,0xffd77a,.24);
+    this.add.text(1235,29,`LV ${state.level}`,{fontFamily:'Arial',fontSize:'13px',fontStyle:'bold',color:'#fff0bf'});
+    this.add.text(1310,29,`HEART ${state.heart}%`,{fontFamily:'Arial',fontSize:'13px',fontStyle:'bold',color:'#82e8df'});
+    this.add.text(1430,29,`◉ ${state.coins}   ✦ ${state.shards}`,{fontFamily:'Arial',fontSize:'13px',fontStyle:'bold',color:'#edf3fb'});
+  }
+  hotspot(x,y,w,h,fn){
+    const r=this.add.rectangle(x,y,w,h,0xffd36f,.001).setInteractive({useHandCursor:true});
+    r.on('pointerover',()=>r.setFillStyle(0xffd36f,.08))
+      .on('pointerout',()=>r.setFillStyle(0xffd36f,.001))
+      .on('pointerdown',()=>{audio.click();fn()});
+    return r;
+  }
+  heartPopup(){
+    audio.awaken();
+    const shade=this.add.rectangle(800,450,1600,900,0x02050b,.70).setInteractive();
+    const panel=this.add.rectangle(800,465,780,350,0x07101f,.97).setStrokeStyle(2,0x85e5dc,.5);
+    const title=this.add.text(455,350,'THE CRYSTAL HEART',{fontFamily:'Georgia',fontSize:'42px',fontStyle:'bold',color:'#fff0bf'});
+    const body=this.add.text(455,420,`Awakening: ${state.heart}%\n\nEvery completed real-world quest restores the Heart. At higher restoration levels, the Wayfarer remembers sealed rooms, lost systems, and new Roads.`,{fontFamily:'Georgia',fontSize:'21px',lineSpacing:8,color:'#dce5f2',wordWrap:{width:690}});
+    const close=this.add.text(800,585,'RETURN TO DECK',{fontFamily:'Arial',fontSize:'15px',fontStyle:'bold',color:'#25190d',backgroundColor:'#efbd5f',padding:{x:26,y:12}}).setOrigin(.5).setInteractive({useHandCursor:true});
+    close.on('pointerdown',()=>{shade.destroy();panel.destroy();title.destroy();body.destroy();close.destroy()});
   }
 }
