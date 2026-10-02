@@ -14,12 +14,13 @@ export class AdventureScene extends Phaser.Scene{
 
     this.hotspot(625,715,460,90,()=>{
       audio.awaken();
-      if(!state.activeQuest)beginQuest(q.id);
-      else {
-        const result=completeQuest(state.activeQuest.id);
-        if(result)this.scene.start('Battle',{result});
+      if(!state.activeQuest){
+        beginQuest(q.id);
+        this.scene.restart();
+        return;
       }
-      this.scene.restart();
+      const result=completeQuest(state.activeQuest.id);
+      if(result)this.scene.start('Battle',{result});
     });
     this.hotspot(1060,715,350,90,()=>{scaleQuest(q.id);audio.click();this.scene.restart()});
 
