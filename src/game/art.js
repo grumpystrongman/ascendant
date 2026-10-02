@@ -1,24 +1,45 @@
 import Phaser from 'phaser';
+import { PRODUCTION_ART } from './production-art.js';
 
 export function preloadArt(scene){
+  scene.load.setCORS('anonymous');
+
+  if(!scene.textures.exists('productionBoard')) scene.load.image('productionBoard',PRODUCTION_ART.board);
+  if(!scene.textures.exists('kaiaIntro')) scene.load.image('kaiaIntro',PRODUCTION_ART.kaiaIntro);
+  if(!scene.textures.exists('kaiaKey')) scene.load.image('kaiaKey',PRODUCTION_ART.kaiaKey);
+  if(!scene.textures.exists('skyshipSunset')) scene.load.image('skyshipSunset',PRODUCTION_ART.skyshipSunset);
+
   const loadSvg=(key,path,w=1600,h=900)=>{if(!scene.textures.exists(key))scene.load.svg(key,path,{width:w,height:h})};
-  loadSvg('artTitle','./art/title.svg');
-  loadSvg('artPrologue','./art/prologue.svg');
-  loadSvg('artWorld','./art/world-map.svg');
-  loadSvg('artShip','./art/ship-interior.svg');
   loadSvg('artSpark','./art/spark-chamber.svg');
-  loadSvg('artBattle','./art/battle-arena.svg');
   loadSvg('kaia','./art/kaia.svg',700,900);
   loadSvg('milo','./art/milo.svg',700,900);
   loadSvg('seren','./art/seren.svg',700,900);
   loadSvg('wraith','./art/wraith.svg',500,600);
 }
-export function defineFrames(){return true}
+export function defineFrames(scene){
+  const t=scene.textures.get('productionBoard');
+  if(!t||t.key==='__MISSING')return false;
+  for(const [name,[x,y,w,h]] of Object.entries(PRODUCTION_ART.frames)){
+    const key='prod_'+name;
+    if(!t.has(key))t.add(key,0,x,y,w,h);
+  }
+  return true;
+}
 export function addBackdrop(scene,frame='title',alpha=1){
-  const map={title:'artTitle',prologue:'artPrologue',world:'artWorld',ship:'artShip',spark:'artSpark',battle:'artBattle'};
-  return scene.add.image(800,450,map[frame]||'artTitle').setDisplaySize(1600,900).setAlpha(alpha);
+  defineFrames(scene);
+  if(frame==='spark') return scene.add.image(800,450,'artSpark').setDisplaySize(1600,900).setAlpha(alpha);
+  const key='prod_'+frame;
+  if(scene.textures.get('productionBoard')?.has?.(key)){
+    return scene.add.image(800,450,'productionBoard',key).setDisplaySize(1600,900).setAlpha(alpha);
+  }
+  return scene.add.image(800,450,'skyshipSunset').setDisplaySize(1600,900).setAlpha(alpha);
 }
 export function addPortrait(scene,id,x,y,height=620){
+  if(id==='kaia'&&scene.textures.exists('kaiaKey')){
+    const img=scene.add.image(x,y,'kaiaKey');
+    img.setScale(height/img.height);
+    return img;
+  }
   const img=scene.add.image(x,y,id);
   img.setScale(height/img.height);
   return img;
