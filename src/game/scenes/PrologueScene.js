@@ -46,27 +46,34 @@ export class PrologueScene extends Phaser.Scene{
   showCompanion(id){
     discover(id);
     const c=COMPANIONS[id];
-    const veil=this.add.rectangle(800,450,1600,900,0x02050b,.22);
-    const portrait=addPortrait(this,id,330,445,710);
-    portrait.x=-80;portrait.alpha=0;
-    this.tweens.add({targets:portrait,x:330,alpha:1,duration:700,ease:'Cubic.out'});
-    this.tweens.add({targets:portrait,y:435,duration:2700,yoyo:true,repeat:-1,ease:'Sine.inOut'});
-    const glow=this.add.circle(330,430,190,c.accent,.09).setBlendMode('ADD');
-    this.tweens.add({targets:glow,scale:1.18,alpha:.03,duration:2300,yoyo:true,repeat:-1});
 
-    const shadow=this.add.rectangle(1108,536,805,580,0x000000,.28);
-    const panel=this.add.rectangle(1100,528,805,580,0x07101f,.94).setStrokeStyle(2,0xdcc16e,.34);
-    const divider=this.add.rectangle(750,535,2,500,0xffffff,.08);
+    if(id==='kaia'&&this.textures.exists('kaiaIntro')){
+      const full=this.add.image(800,450,'kaiaIntro').setDisplaySize(1600,900);
+      const glow=this.add.circle(1325,802,185,0xffd16f,.07);
+      const hit=this.add.rectangle(1365,805,320,86,0xffd16f,.001).setInteractive({useHandCursor:true});
+      this.tweens.add({targets:glow,scale:1.08,alpha:.02,duration:1300,yoyo:true,repeat:-1});
+      hit.on('pointerover',()=>hit.setFillStyle(0xffd16f,.07))
+        .on('pointerout',()=>hit.setFillStyle(0xffd16f,.001))
+        .on('pointerdown',()=>{audio.click();patch({prologue:Math.min(10,state.prologue+1)});this.showStep()});
+      this.keep(full,glow,hit);
+      return;
+    }
 
-    const label=this.add.text(780,278,'THE WAYFARERS',{fontFamily:'Arial',fontSize:'14px',fontStyle:'bold',letterSpacing:5,color:'#78dfd2'});
-    const name=this.add.text(780,318,c.name,{fontFamily:'Georgia',fontSize:'52px',fontStyle:'bold',color:'#fff0bf'});
-    const title=this.add.text(780,380,c.title,{fontFamily:'Georgia',fontSize:'21px',color:'#bba9ff'});
-    const rule=this.add.rectangle(780,420,590,2,0xd6b766,.35).setOrigin(0,.5);
-    const intro=this.add.text(780,448,c.intro,{fontFamily:'Georgia',fontSize:'21px',lineSpacing:7,color:'#e1e7f1',wordWrap:{width:595}});
-    const quoteBox=this.add.rectangle(1080,660,615,105,0x0c2737,.96).setStrokeStyle(1,0x6fe1d4,.65);
-    const quote=this.add.text(810,630,c.line,{fontFamily:'Georgia',fontSize:'19px',fontStyle:'italic',color:'#f2d07c',wordWrap:{width:520}});
-    this.keep(veil,portrait,glow,shadow,panel,divider,label,name,title,rule,intro,quoteBox,quote);
-    this.nextButton(1310,782,'CONTINUE');
+    addBackdrop(this,'party');
+    const veil=this.add.rectangle(800,450,1600,900,0x02050b,.52);
+    const portrait=addPortrait(this,id,360,470,650);
+    portrait.x=-70; portrait.alpha=0;
+    this.tweens.add({targets:portrait,x:360,alpha:1,duration:650,ease:'Cubic.out'});
+
+    const shadow=this.add.rectangle(1110,515,790,560,0x000000,.28);
+    const panel=this.add.rectangle(1100,505,790,560,0x07101f,.94).setStrokeStyle(2,c.accent,.40);
+    const label=this.add.text(770,270,'THE WAYFARERS',{fontFamily:'Arial',fontSize:'14px',fontStyle:'bold',letterSpacing:5,color:'#78dfd2'});
+    const name=this.add.text(770,312,c.name,{fontFamily:'Georgia',fontSize:'50px',fontStyle:'bold',color:'#fff0bf'});
+    const title=this.add.text(770,372,c.title,{fontFamily:'Georgia',fontSize:'20px',color:'#c7b7ff'});
+    const intro=this.add.text(770,430,c.intro,{fontFamily:'Georgia',fontSize:'21px',lineSpacing:7,color:'#e0e7f2',wordWrap:{width:610}});
+    const quote=this.add.text(770,650,c.line,{fontFamily:'Georgia',fontSize:'19px',fontStyle:'italic',color:'#f2cd78',wordWrap:{width:560}});
+    this.keep(veil,portrait,shadow,panel,label,name,title,intro,quote);
+    this.nextButton(1310,780,'CONTINUE');
   }
   showDialogue(id,text){
     const c=COMPANIONS[id];
