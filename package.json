@@ -1,13 +1,13 @@
 {
   "name": "ascendant",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "check": "node --check src/main.js && node --check src/game/state.js && node --check src/game/lore.js && node --check src/game/scenes/TitleScene.js && node --check src/game/scenes/PrologueScene.js && node --check src/game/scenes/AdventureScene.js"
+    "check": "node --check src/main.js && node --check src/game/state.js && node --check src/game/lore.js && node --check src/game/art.js && node --check src/game/ui.js && node --check src/game/audio.js && node --check src/game/scenes/TitleScene.js && node --check src/game/scenes/PrologueScene.js && node --check src/game/scenes/HubScene.js && node --check src/game/scenes/WorldScene.js && node --check src/game/scenes/AdventureScene.js && node --check src/game/scenes/BattleScene.js && node --check src/game/scenes/PartyScene.js && node --check src/game/scenes/CodexScene.js"
   },
   "dependencies": {
     "phaser": "^3.90.0"
