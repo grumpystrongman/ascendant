@@ -12,6 +12,9 @@ export const PRODUCTION_ART={
     quest:[1025,345,511,355],
     battle:[0,700,512,324],
     victory:[512,700,513,324],
-    party:[1025,700,511,324]
+    party:[1025,700,511,324],
+    kaiaPortrait:[1042,746,155,250],
+    miloPortrait:[1202,746,155,250],
+    serenPortrait:[1364,746,158,250]
   }
 };
