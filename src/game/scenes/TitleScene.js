@@ -8,55 +8,41 @@ export class TitleScene extends Phaser.Scene{
   preload(){preloadArt(this)}
   create(){
     addBackdrop(this,'title');
-    this.add.rectangle(800,450,1600,900,0x040714,.26);
-    addParticles(this,'gold',52);
+    addParticles(this,'gold',28);
 
-    const halo=this.add.circle(800,430,230,0x79e3d5,.08).setBlendMode('ADD');
-    this.tweens.add({targets:halo,scale:{from:.9,to:1.15},alpha:{from:.06,to:.14},duration:3200,yoyo:true,repeat:-1,ease:'Sine.inOut'});
-
-    const crest=this.add.graphics();
-    crest.lineStyle(3,0xf2cb76,.62);
-    crest.strokeCircle(800,215,44);crest.strokeCircle(800,215,25);
-    crest.beginPath();crest.moveTo(800,155);crest.lineTo(800,275);crest.moveTo(740,215);crest.lineTo(860,215);crest.strokePath();
-    this.tweens.add({targets:crest,angle:360,duration:40000,repeat:-1});
-
-    const title=this.add.text(800,330,'ASCENDANT',{
-      fontFamily:'Georgia',fontSize:'118px',fontStyle:'bold',color:'#fff0bf',
-      stroke:'#101226',strokeThickness:10,shadow:{offsetX:0,offsetY:5,color:'#000000',blur:14,fill:true}
-    }).setOrigin(.5);
-    this.add.text(800,420,'THE REAL-LIFE RPG',{
-      fontFamily:'Arial',fontSize:'18px',fontStyle:'bold',letterSpacing:9,color:'#8ff0dd',
-      stroke:'#050914',strokeThickness:5
-    }).setOrigin(.5);
-
-    this.add.text(800,545,'The Roads were once alive.\nNow they wake only when intention becomes action.',{
-      fontFamily:'Georgia',fontSize:'29px',align:'center',lineSpacing:10,color:'#f0f2f8',
-      stroke:'#050914',strokeThickness:7
-    }).setOrigin(.5);
-
-    this.button(800,690,state.prologue>0?'CONTINUE JOURNEY':'BEGIN THE PROLOGUE',()=>{
-      audio.awaken();
-      this.cameras.main.fadeOut(260,0,0,0);
-      this.time.delayedCall(250,()=>this.scene.start(state.prologue>=11?'Hub':'Prologue'));
+    const vignette=this.add.rectangle(800,450,1600,900,0x02050c,.10);
+    const newJourney=this.hotspot(350,560,390,72,()=>{
+      reset();audio.awaken();this.scene.start('Prologue');
     });
+    const continueBtn=this.hotspot(350,648,390,58,()=>{
+      audio.awaken();
+      this.scene.start(state.prologue>=11?'Hub':'Prologue');
+    });
+    this.hotspot(350,730,390,58,()=>this.popup('SETTINGS','Audio and accessibility controls are being moved into the in-world system menu. For now, your campaign saves automatically on this device.'));
+    this.hotspot(350,810,390,58,()=>this.popup('CREDITS','Ascendant is being built as a living real-life RPG with Phaser, original game systems, generated production art, and your campaign state at the center.'));
 
-    if(state.prologue>0){
-      this.add.text(800,760,'NEW JOURNEY',{fontFamily:'Arial',fontSize:'13px',fontStyle:'bold',letterSpacing:2,color:'#d0d7e4'})
-        .setOrigin(.5).setInteractive({useHandCursor:true})
-        .on('pointerdown',()=>{reset();audio.click();this.scene.restart()});
+    if(!state.prologue){
+      continueBtn.setAlpha(.03);
     }
+    this.add.text(1510,860,'v0.4 production-art pass',{
+      fontFamily:'Arial',fontSize:'11px',color:'#dfe7f5',backgroundColor:'#07101faa',padding:{x:8,y:5}
+    }).setOrigin(1,1);
 
-    this.add.text(800,838,'Built around your real actions · progress is saved locally',{
-      fontFamily:'Arial',fontSize:'12px',color:'#8593a8'
-    }).setOrigin(.5);
-    this.cameras.main.fadeIn(900,0,0,0);
+    this.cameras.main.fadeIn(650,0,0,0);
   }
-  button(x,y,label,fn){
-    const glow=this.add.rectangle(x,y,400,74,0xf3c76a,.10);
-    const bg=this.add.rectangle(x,y,370,62,0xefbd5f,1).setStrokeStyle(2,0xffe6a5,.9).setInteractive({useHandCursor:true});
-    const t=this.add.text(x,y,label,{fontFamily:'Arial',fontSize:'18px',fontStyle:'bold',letterSpacing:.8,color:'#25190d'}).setOrigin(.5);
-    bg.on('pointerover',()=>this.tweens.add({targets:[glow,bg,t],scale:1.04,duration:100}))
-      .on('pointerout',()=>this.tweens.add({targets:[glow,bg,t],scale:1,duration:100}))
-      .on('pointerdown',fn);
+  hotspot(x,y,w,h,fn){
+    const r=this.add.rectangle(x,y,w,h,0xffd36f,.001).setInteractive({useHandCursor:true});
+    r.on('pointerover',()=>r.setFillStyle(0xffd36f,.10))
+      .on('pointerout',()=>r.setFillStyle(0xffd36f,.001))
+      .on('pointerdown',()=>{audio.click();fn()});
+    return r;
+  }
+  popup(title,text){
+    const shade=this.add.rectangle(800,450,1600,900,0x02050b,.74).setInteractive();
+    const panel=this.add.rectangle(800,470,760,340,0x07101f,.97).setStrokeStyle(2,0xe2c36f,.42);
+    const h=this.add.text(470,360,title,{fontFamily:'Georgia',fontSize:'40px',fontStyle:'bold',color:'#fff0bf'});
+    const b=this.add.text(470,430,text,{fontFamily:'Georgia',fontSize:'21px',lineSpacing:8,color:'#dce4f1',wordWrap:{width:650}});
+    const close=this.add.text(800,590,'CLOSE',{fontFamily:'Arial',fontSize:'15px',fontStyle:'bold',color:'#25190d',backgroundColor:'#efbd5f',padding:{x:28,y:12}}).setOrigin(.5).setInteractive({useHandCursor:true});
+    close.on('pointerdown',()=>{shade.destroy();panel.destroy();h.destroy();b.destroy();close.destroy()});
   }
 }
