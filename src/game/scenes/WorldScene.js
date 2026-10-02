@@ -1,44 +1,48 @@
 import Phaser from 'phaser';
 import { state } from '../state.js';
-import { REGIONS } from '../lore.js';
-import { preloadArt,defineFrames,addBackdrop,addParticles } from '../art.js';
-import { panel,topBar,nav } from '../ui.js';
+import { preloadArt,addBackdrop,addParticles } from '../art.js';
 import { audio } from '../audio.js';
 
 export class WorldScene extends Phaser.Scene{
   constructor(){super('World')}
   preload(){preloadArt(this)}
   create(){
-    defineFrames(this);addBackdrop(this,'world');this.add.rectangle(800,450,1600,900,0x06101d,.20);addParticles(this,'teal',30);
-    topBar(this,state,'THE LIVING MAP','Roads appear when possibility becomes real');nav(this,'World');
-    panel(this,325,460,520,660,.88);
-    this.add.text(85,160,'THE BROKEN ROADS',{fontFamily:'Arial',fontSize:'14px',fontStyle:'bold',letterSpacing:4,color:'#78dfd2'});
-    this.add.text(85,198,'Choose a horizon',{fontFamily:'Georgia',fontSize:'39px',fontStyle:'bold',color:'#fff0bf'});
-    this.add.text(85,258,'The map is not geography. It is a record of what the Wayfarer can currently reach.',{fontFamily:'Georgia',fontSize:'18px',lineSpacing:6,color:'#cbd6e6',wordWrap:{width:430}});
-    let y=340;
-    REGIONS.forEach((r,i)=>{
-      const unlocked=state.unlockedRegions.includes(r.id);
-      const row=this.add.rectangle(325,y,440,88,unlocked?0x15304b:0x101623,.94).setStrokeStyle(1,unlocked?0xe3c26b:0x667080,.4);
-      this.add.text(125,y-28,r.tag,{fontFamily:'Arial',fontSize:'10px',fontStyle:'bold',letterSpacing:2,color:unlocked?'#79dfd2':'#626b79'});
-      this.add.text(125,y-7,r.name,{fontFamily:'Georgia',fontSize:'21px',fontStyle:'bold',color:unlocked?'#fff0bf':'#6d7582'});
-      this.add.text(125,y+20,r.desc,{fontFamily:'Arial',fontSize:'11px',color:unlocked?'#b8c5d6':'#5d6571',wordWrap:{width:360}});
-      if(unlocked) row.setInteractive({useHandCursor:true}).on('pointerdown',()=>{audio.chime();this.scene.start('Adventure',{region:r.id})});
-      y+=105;
-    });
-    const nodes=[
-      {x:865,y:650,label:'WAYFARER',active:true},
-      {x:1005,y:545,label:'AMBER HIGHLANDS',active:true},
-      {x:1190,y:425,label:'LUMENWOOD',active:false},
-      {x:1335,y:305,label:'GLASS EXPANSE',active:false}
-    ];
-    const g=this.add.graphics();g.lineStyle(4,0xffd77c,.45);g.beginPath();g.moveTo(nodes[0].x,nodes[0].y);nodes.slice(1).forEach(n=>g.lineTo(n.x,n.y));g.strokePath();
-    nodes.forEach((n,i)=>{
-      const ring=this.add.circle(n.x,n.y,n.active?28:21,n.active?0x183c57:0x17202c,.96).setStrokeStyle(3,n.active?0xffd477:0x5d6775,.8);
-      if(i===1)ring.setInteractive({useHandCursor:true}).on('pointerdown',()=>this.scene.start('Adventure',{region:'amber'}));
-      this.add.text(n.x,n.y,i===0?'✦':i===1?'◆':'◇',{fontFamily:'Arial',fontSize:'22px',color:n.active?'#fff0bf':'#738093'}).setOrigin(.5);
-      this.add.text(n.x,n.y+39,n.label,{fontFamily:'Arial',fontSize:'11px',fontStyle:'bold',color:n.active?'#f7e9ba':'#758093',backgroundColor:'#08101fcc',padding:{x:7,y:4}}).setOrigin(.5);
-      if(n.active)this.tweens.add({targets:ring,scale:1.15,alpha:.7,duration:1500+i*300,yoyo:true,repeat:-1,ease:'Sine.inOut'});
-    });
-    this.cameras.main.fadeIn(450,0,0,0);
+    addBackdrop(this,'world');
+    addParticles(this,'teal',16);
+    this.dynamicPill();
+
+    this.hotspot(430,495,420,120,()=>this.scene.start('Adventure',{region:'amber'}));
+    this.hotspot(430,315,390,105,()=>this.locked('Frostspire Peaks'));
+    this.hotspot(1180,515,400,110,()=>this.locked('Verdant Expanse'));
+    this.hotspot(1320,300,430,110,()=>this.locked('The Hollow Expanse'));
+    this.hotspot(1240,690,420,110,()=>this.locked('The Silent Rift'));
+
+    this.hotspot(350,835,165,90,()=>{});
+    this.hotspot(585,835,165,90,()=>this.scene.start('Hub'));
+    this.hotspot(810,835,165,90,()=>this.scene.start('Party'));
+    this.hotspot(1030,835,165,90,()=>this.scene.start('Codex'));
+    this.hotspot(1250,835,165,90,()=>this.scene.start('Adventure'));
+
+    this.cameras.main.fadeIn(420,0,0,0);
+  }
+  dynamicPill(){
+    this.add.rectangle(1390,50,320,48,0x06101d,.80).setStrokeStyle(1,0xffd77a,.22);
+    this.add.text(1250,38,`LV ${state.level}`,{fontFamily:'Arial',fontSize:'13px',fontStyle:'bold',color:'#fff0bf'});
+    this.add.text(1330,38,`◉ ${state.coins}`,{fontFamily:'Arial',fontSize:'13px',fontStyle:'bold',color:'#f2d07a'});
+    this.add.text(1430,38,`✦ ${state.shards}`,{fontFamily:'Arial',fontSize:'13px',fontStyle:'bold',color:'#b8a8ff'});
+  }
+  hotspot(x,y,w,h,fn){
+    const r=this.add.rectangle(x,y,w,h,0xffd36f,.001).setInteractive({useHandCursor:true});
+    r.on('pointerover',()=>r.setFillStyle(0xffd36f,.08))
+      .on('pointerout',()=>r.setFillStyle(0xffd36f,.001))
+      .on('pointerdown',()=>{audio.click();fn()});
+  }
+  locked(name){
+    const shade=this.add.rectangle(800,450,1600,900,0x02050b,.64).setInteractive();
+    const panel=this.add.rectangle(800,470,720,280,0x07101f,.97).setStrokeStyle(2,0xdcc16e,.35);
+    const title=this.add.text(800,395,name,{fontFamily:'Georgia',fontSize:'38px',fontStyle:'bold',color:'#fff0bf'}).setOrigin(.5);
+    const body=this.add.text(800,465,'This Road has not awakened yet. Restore more of the Wayfarer and advance the Amber Highlands to reveal it.',{fontFamily:'Georgia',fontSize:'20px',align:'center',lineSpacing:8,color:'#dce4f1',wordWrap:{width:590}}).setOrigin(.5);
+    const close=this.add.text(800,570,'RETURN TO MAP',{fontFamily:'Arial',fontSize:'14px',fontStyle:'bold',color:'#25190d',backgroundColor:'#efbd5f',padding:{x:24,y:11}}).setOrigin(.5).setInteractive({useHandCursor:true});
+    close.on('pointerdown',()=>{shade.destroy();panel.destroy();title.destroy();body.destroy();close.destroy()});
   }
 }
