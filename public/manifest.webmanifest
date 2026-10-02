@@ -1,0 +1,13 @@
+{
+  "name": "Ascendant — The Real-Life RPG",
+  "short_name": "Ascendant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0e172b",
+  "theme_color": "#16233f",
+  "description": "Turn your real-life goals into an AI-guided animated fantasy RPG.",
+  "icons": [
+    {"src":"./assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
