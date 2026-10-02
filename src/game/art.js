@@ -11,9 +11,6 @@ export function preloadArt(scene){
 
   const loadSvg=(key,path,w=1600,h=900)=>{if(!scene.textures.exists(key))scene.load.svg(key,path,{width:w,height:h})};
   loadSvg('artSpark','./art/spark-chamber.svg');
-  loadSvg('kaia','./art/kaia.svg',700,900);
-  loadSvg('milo','./art/milo.svg',700,900);
-  loadSvg('seren','./art/seren.svg',700,900);
   loadSvg('wraith','./art/wraith.svg',500,600);
 }
 export function defineFrames(scene){
@@ -29,20 +26,28 @@ export function addBackdrop(scene,frame='title',alpha=1){
   defineFrames(scene);
   if(frame==='spark') return scene.add.image(800,450,'artSpark').setDisplaySize(1600,900).setAlpha(alpha);
   const key='prod_'+frame;
-  if(scene.textures.get('productionBoard')?.has?.(key)){
+  const texture=scene.textures.get('productionBoard');
+  if(texture?.has?.(key)){
     return scene.add.image(800,450,'productionBoard',key).setDisplaySize(1600,900).setAlpha(alpha);
   }
   return scene.add.image(800,450,'skyshipSunset').setDisplaySize(1600,900).setAlpha(alpha);
 }
 export function addPortrait(scene,id,x,y,height=620){
+  defineFrames(scene);
   if(id==='kaia'&&scene.textures.exists('kaiaKey')){
     const img=scene.add.image(x,y,'kaiaKey');
     img.setScale(height/img.height);
     return img;
   }
-  const img=scene.add.image(x,y,id);
-  img.setScale(height/img.height);
-  return img;
+  const frameMap={milo:'prod_miloPortrait',seren:'prod_serenPortrait',kaia:'prod_kaiaPortrait'};
+  const frame=frameMap[id];
+  if(frame&&scene.textures.get('productionBoard')?.has?.(frame)){
+    const img=scene.add.image(x,y,'productionBoard',frame);
+    img.setScale(height/img.height);
+    return img;
+  }
+  const fallback=scene.add.rectangle(x,y,height*.58,height,0x182238,.9).setStrokeStyle(2,0xd4b76c,.35);
+  return fallback;
 }
 export function addParticles(scene,kind='gold',count=42){
   const color=kind==='teal'?0x78f1df:0xffdfa3;
