@@ -1,34 +1,47 @@
 import Phaser from 'phaser';
 import { state } from '../state.js';
 import { COMPANIONS } from '../lore.js';
-import { preloadArt,defineFrames,addBackdrop,addPortrait } from '../art.js';
-import { panel,topBar,nav } from '../ui.js';
+import { preloadArt,addBackdrop } from '../art.js';
 import { audio } from '../audio.js';
 
 export class PartyScene extends Phaser.Scene{
   constructor(){super('Party')}
   preload(){preloadArt(this)}
-  create(data={}){
-    defineFrames(this);addBackdrop(this,'ship');this.add.rectangle(800,450,1600,900,0x030712,.62);
-    topBar(this,state,'THE WAYFARERS','Trust changes what the party can do');nav(this,'Party');
-    const ids=['kaia','milo','seren'];let focus=data.focus||'kaia';
-    ids.forEach((id,i)=>{
-      const c=COMPANIONS[id],x=260+i*540;
-      panel(this,x,455,455,650,.92);
-      const p=addPortrait(this,id,x,325,420);p.setAlpha(.96);
-      this.add.text(x,570,c.name,{fontFamily:'Georgia',fontSize:'30px',fontStyle:'bold',color:'#fff0bf'}).setOrigin(.5);
-      this.add.text(x,605,c.title,{fontFamily:'Arial',fontSize:'12px',fontStyle:'bold',color:'#bcaaff',wordWrap:{width:360},align:'center'}).setOrigin(.5);
-      this.add.text(x,650,c.intro,{fontFamily:'Georgia',fontSize:'15px',lineSpacing:5,color:'#cbd6e6',wordWrap:{width:370},align:'center'}).setOrigin(.5);
-      const bond=state.bonds[id]||0;
-      this.add.rectangle(x,765,310,8,0x121b2a);this.add.rectangle(x-155,765,310*(bond/100),8,c.accent).setOrigin(0,.5);
-      this.add.text(x,790,`BOND ${bond}% · click for banter`,{fontFamily:'Arial',fontSize:'11px',fontStyle:'bold',color:'#93a2b8'}).setOrigin(.5);
-      p.setInteractive({useHandCursor:true}).on('pointerdown',()=>{audio.click();const line=Phaser.Utils.Array.GetRandom(c.banter);this.say(c,line)});
-    });
+  create(){
+    addBackdrop(this,'party');
+    this.dynamicPill();
+
+    this.card(1135,820,155,245,'kaia');
+    this.card(1290,820,155,245,'milo');
+    this.card(1450,820,155,245,'seren');
+
+    this.hotspot(110,55,170,85,()=>this.scene.start('Hub'));
     this.cameras.main.fadeIn(350,0,0,0);
   }
-  say(c,line){
-    panel(this,800,740,920,160,.97);
-    this.add.text(390,695,c.name.toUpperCase(),{fontFamily:'Arial',fontSize:'12px',fontStyle:'bold',letterSpacing:3,color:'#78dfd2'});
-    this.add.text(390,730,line,{fontFamily:'Georgia',fontSize:'23px',fontStyle:'italic',color:'#fff0bf',wordWrap:{width:800}});
+  dynamicPill(){
+    this.add.rectangle(1440,45,255,48,0x06101d,.82).setStrokeStyle(1,0xffd77a,.2);
+    this.add.text(1340,33,`LV ${state.level}`,{fontFamily:'Arial',fontSize:'13px',fontStyle:'bold',color:'#fff0bf'});
+    this.add.text(1415,33,`HEART ${state.heart}%`,{fontFamily:'Arial',fontSize:'13px',fontStyle:'bold',color:'#82e8df'});
+  }
+  card(x,y,w,h,id){
+    const r=this.add.rectangle(x,y,w,h,0xffd36f,.001).setInteractive({useHandCursor:true});
+    r.on('pointerover',()=>r.setFillStyle(COMPANIONS[id].accent,.09))
+      .on('pointerout',()=>r.setFillStyle(0xffd36f,.001))
+      .on('pointerdown',()=>{audio.click();this.banter(id)});
+  }
+  hotspot(x,y,w,h,fn){
+    const r=this.add.rectangle(x,y,w,h,0xffd36f,.001).setInteractive({useHandCursor:true});
+    r.on('pointerdown',fn);
+  }
+  banter(id){
+    const c=COMPANIONS[id];
+    const shade=this.add.rectangle(800,450,1600,900,0x02050b,.70).setInteractive();
+    const panel=this.add.rectangle(800,525,900,300,0x07101f,.97).setStrokeStyle(2,c.accent,.45);
+    const name=this.add.text(405,420,c.name,{fontFamily:'Georgia',fontSize:'38px',fontStyle:'bold',color:'#fff0bf'});
+    const line=Phaser.Utils.Array.GetRandom(c.banter);
+    const text=this.add.text(405,485,line,{fontFamily:'Georgia',fontSize:'25px',fontStyle:'italic',lineSpacing:8,color:'#dce5f2',wordWrap:{width:760}});
+    const bond=this.add.text(405,620,`BOND ${state.bonds[id]||0}%`,{fontFamily:'Arial',fontSize:'13px',fontStyle:'bold',letterSpacing:3,color:'#f2c66f'});
+    const close=this.add.text(1160,650,'CLOSE',{fontFamily:'Arial',fontSize:'14px',fontStyle:'bold',color:'#25190d',backgroundColor:'#efbd5f',padding:{x:22,y:10}}).setInteractive({useHandCursor:true});
+    close.on('pointerdown',()=>{shade.destroy();panel.destroy();name.destroy();text.destroy();bond.destroy();close.destroy()});
   }
 }
